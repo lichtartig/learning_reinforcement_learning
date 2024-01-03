@@ -1,11 +1,6 @@
 import numpy as np
 from collections import deque
-from enum import Enum
-
-
-class BatchGeneratorType(Enum):
-    STATE_AND_ACTION_AS_INPUTS = 1
-    ONLY_STATE_AS_INPUT = 2
+from agents import BatchGeneratorType
 
 
 class ExperienceBuffer():
@@ -65,3 +60,5 @@ class ExperienceBuffer():
         self.states.clear()
         self.actions.clear()
         self.rewards.clear()
+        self.next_states.clear()
+        self.sample_weights.clear()

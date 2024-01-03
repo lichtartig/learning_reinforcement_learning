@@ -1,38 +1,27 @@
 import numpy as np
-from .base_agent import BaseAgent
-from .base_neural import BaseNeural, HyperParams
-from experience_buffer import BatchGeneratorType
+from . import BaseAgent, BatchGeneratorType, ModelHyperParams
 from tensorflow.keras.layers import Concatenate, Dense, Input
 from tensorflow.keras.models import Model
 
 
-class QLearner(BaseAgent, BaseNeural):
+class QLearner(BaseAgent):
     name = "q_learner"
     generator_type = BatchGeneratorType.STATE_AND_ACTION_AS_INPUTS
-    
-    def __init__(self, env, hyper_params: HyperParams):
-        super().__init__(env=env)
-        self.model = self._get_model(hyper_params)
-        self.epsilon = hyper_params.initial_epsilon
-        self.epsilon_decay_constant = hyper_params.epsilon_decay_constant
-        self.gamma = hyper_params.gamma
     
     def get_action(self, state, is_training=False):
         if self._should_make_random_action and is_training:
             return self._get_random_action()
         
-        actions = self._get_all_actions()
-        qs = [self.model.predict([state[None,:], a.reshape(-1, self.action_dim)], verbose=0) for a in actions]
-        return actions[np.argmax(qs)]
+        qs = [self.model.predict([state[None,:], a.reshape(-1, self.action_dim)], verbose=0) for a in self.all_actions]
+        return  self.all_actions[np.argmax(qs)]
 
     def build_targets(self, actions, rewards, states, next_states):
         dim = next_states.shape[0]
-        action_space = self._get_all_actions()
         predict = lambda a: self.model.predict([next_states, np.repeat(a[None,...], dim)], verbose=0)
-        max_qs = np.max([predict(a) for a in action_space], axis=0)[0]
-        return rewards + self.gamma * max_qs
+        max_qs = np.max([predict(a) for a in self.all_actions], axis=0)[:, 0]
+        return (rewards + self.hyper_params.gamma * max_qs) / (1 + self.hyper_params.gamma)
 
-    def _get_model(self, hyper_params: HyperParams):
+    def _get_model(self, hyper_params: ModelHyperParams):
         state_input = Input(shape=(self.state_dim,), name="state_input")
         action_input = Input(shape=(self.action_dim,), name="action_input")
         merged = Concatenate(axis=1)([state_input, action_input])

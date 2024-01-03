@@ -1,20 +1,12 @@
 import numpy as np
-from .base_agent import BaseAgent
-from .base_neural import BaseNeural, HyperParams
-from experience_buffer import BatchGeneratorType
+from . import BaseAgent, BatchGeneratorType, ModelHyperParams
 from tensorflow.keras.layers import Concatenate, Dense, Input
 from tensorflow.keras.models import Model
 
 
-class PolicyGradient(BaseAgent, BaseNeural):
+class PolicyGradient(BaseAgent):
     name = "policy_gradient"
     generator_type = BatchGeneratorType.ONLY_STATE_AS_INPUT
-    
-    def __init__(self, env, hyper_params: HyperParams):
-        super().__init__(env=env)
-        self.model = self._get_model(hyper_params)
-        self.epsilon = hyper_params.initial_epsilon
-        self.epsilon_decay_constant = hyper_params.epsilon_decay_constant
     
     def get_action(self, state, is_training=False):
         if self._should_make_random_action and is_training:
@@ -25,12 +17,11 @@ class PolicyGradient(BaseAgent, BaseNeural):
 
     def build_targets(self, actions, rewards, states, next_states):
         rescaled_rewards = 2*(rewards - 0.5)
-        # TODO: Generalize this if needed. I.e. this only works if the actions is 1.0 or 0.0
-        categorical_actions = np.array([actions, (1.0-actions)])
+        categorical_actions = self._get_categorical_action_encoding(actions)
         targets = np.transpose(categorical_actions * rescaled_rewards)
         return targets
 
-    def _get_model(self, hyper_params: HyperParams):
+    def _get_model(self, hyper_params: ModelHyperParams):
         state_input = Input(shape=(self.state_dim,), name="state_input")
 
         top_layer = state_input
@@ -39,8 +30,8 @@ class PolicyGradient(BaseAgent, BaseNeural):
                            kernel_regularizer=hyper_params.kernel_regularizer,
                            kernel_initializer=hyper_params.kernel_initializer, name="hidden_"+str(i))(top_layer)
 
-        # TODO the number "2" should be expressed more generally.
-        output = Dense(2, activation="softmax", name="output")(top_layer)
+        d = len(self.all_actions)
+        output = Dense(d, activation="softmax", name="output")(top_layer)
         model = Model(inputs=state_input, outputs=output)
         model.compile(optimizer=hyper_params.optimizer, loss='categorical_crossentropy')
         return model
