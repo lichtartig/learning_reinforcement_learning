@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.typing as npt
 from . import BaseAgent, BatchGeneratorType, ModelHyperParams
 from tensorflow.keras.layers import Concatenate, Dense, Input
 from tensorflow.keras.models import Model
@@ -8,22 +9,27 @@ class QLearner(BaseAgent):
     name = "q_learner"
     generator_type = BatchGeneratorType.STATE_AND_ACTION_AS_INPUTS
     
-    def get_action(self, state, is_training=False):
+    def get_action(self, state: npt.ArrayLike, is_training: bool = False) -> npt.ArrayLike:
         if self._should_make_random_action and is_training:
             return self._get_random_action()
-        
-        qs = [self.model.predict([state[None,:], a.reshape(-1, self.action_dim)], verbose=0) for a in self.all_actions]
-        return  self.all_actions[np.argmax(qs)]
 
-    def build_targets(self, actions, rewards, states, next_states):
+        actions = self.env_handler.get_all_actions()
+        action_dim = self.env_handler.get_action_dim()
+        qs = [self.model.predict([state[None,:], a.reshape(-1, action_dim)], verbose=0) for a in actions]
+        return  actions[np.argmax(qs)]
+
+    def build_targets(
+        self,
+        actions: npt.ArrayLike, rewards: npt.ArrayLike, states: npt.ArrayLike, next_states: npt.ArrayLike
+    ) -> npt.ArrayLike:
         dim = next_states.shape[0]
         predict = lambda a: self.model.predict([next_states, np.repeat(a[None,...], dim)], verbose=0)
-        max_qs = np.max([predict(a) for a in self.all_actions], axis=0)[:, 0]
+        max_qs = np.max([predict(a) for a in self.env_handler.get_all_actions()], axis=0)[:, 0]
         return (rewards + self.hyper_params.gamma * max_qs) / (1 + self.hyper_params.gamma)
 
-    def _get_model(self, hyper_params: ModelHyperParams):
-        state_input = Input(shape=(self.state_dim,), name="state_input")
-        action_input = Input(shape=(self.action_dim,), name="action_input")
+    def _get_model(self, hyper_params: ModelHyperParams) -> Model:
+        state_input = Input(shape=(self.env_handler.get_state_dim(),), name="state_input")
+        action_input = Input(shape=(self.env_handler.get_action_dim(),), name="action_input")
         merged = Concatenate(axis=1)([state_input, action_input])
 
         output = merged

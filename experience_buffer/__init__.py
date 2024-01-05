@@ -1,10 +1,12 @@
 import numpy as np
-from collections import deque
+import numpy.typing as npt
 from agents import BatchGeneratorType
+from collections import deque
+from typing import Callable
 
 
 class ExperienceBuffer():
-    def __init__(self, max_buffer_size):
+    def __init__(self, max_buffer_size: int):
         self.max_buffer_size = max_buffer_size
         
         self.states = deque([])
@@ -20,7 +22,8 @@ class ExperienceBuffer():
         self.sample_weight_arr = np.array([])
         self.target_arr = np.array([])
 
-    def save_experience(self, state, action, reward, sample_weight, next_state):
+    def save_experience(self, state: npt.ArrayLike, action: npt.ArrayLike, reward: float, sample_weight: float,
+                        next_state: npt.ArrayLike):
         self.states.append(state)
         self.actions.append(action)
         self.next_states.append(next_state)
@@ -34,7 +37,10 @@ class ExperienceBuffer():
             self.rewards.popleft()
             self.sample_weights.popleft()
 
-    def prepare_experience_for_training(self, target_builder_fct):
+    def prepare_experience_for_training(
+        self,
+        target_builder_fct: Callable[[npt.ArrayLike, npt.ArrayLike, npt.ArrayLike, npt.ArrayLike], npt.ArrayLike]
+    ):
         p = np.random.permutation(len(self.states))
         self.state_arr = np.array(self.states)[p]
         self.action_arr = np.array(self.actions)[p]
@@ -43,7 +49,7 @@ class ExperienceBuffer():
         self.sample_weight_arr = np.array(self.sample_weights)[p]
         self.target_arr = target_builder_fct(self.action_arr, self.reward_arr, self.state_arr, self.next_state_arr)
 
-    def batch_generator(self, batch_size, batch_generator_type):
+    def batch_generator(self, batch_size: int, batch_generator_type: BatchGeneratorType) -> npt.ArrayLike:
         start = 0
         while start + batch_size <= len(self.states):
             end = start + batch_size

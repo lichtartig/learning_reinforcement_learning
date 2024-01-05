@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.typing as npt
 from . import EnvironmentHandler, Evaluation
 
 
@@ -7,7 +8,7 @@ class CartPoleHandler(EnvironmentHandler):
     state_space_normalization = np.array([4.8, 1.0, 0.418, 1.0])
     previous_benchmark = 20
 
-    def benchmark_agent(self, agent):
+    def benchmark_agent(self, agent) -> float:
         lengths = []
         
         for e in range(self.no_of_benchmark_episodes):
@@ -26,7 +27,7 @@ class CartPoleHandler(EnvironmentHandler):
         return median_episode_length
         
 
-    def evaluate_benchmark(self, prev_benchmark, benchmark_result):
+    def evaluate_benchmark(self, prev_benchmark: float, benchmark_result: float) -> Evaluation:
         self.previous_benchmark = self.previous_benchmark if prev_benchmark is None else prev_benchmark
 
         if self.previous_benchmark <= 20.0 and benchmark_result <= 20.0:
@@ -38,16 +39,26 @@ class CartPoleHandler(EnvironmentHandler):
         else:
             return Evaluation.UPDATE_WEIGHTS
 
-    def _preprocess_action_outcome(self, state, reward, terminated, truncated, info):
+    def get_action_dim(self):
+        return 1
+
+    def get_all_actions(self):
+        all_actions = np.array([0, 1])
+        return all_actions
+
+    def get_state_dim(self):
+        return 2
+
+    def get_categorical_action_encoding(self, actions: npt.ArrayLike) -> npt.ArrayLike:
+        return np.array([actions, (1.0-actions)])
+
+    def _preprocess_action_outcome(self, state: npt.ArrayLike, reward: float, terminated: bool, truncated: bool,
+                                   info: npt.ArrayLike):
         normalised_state = self._preprocess_state(state)
         reward = 0.0 if terminated or truncated else 1.0
         return normalised_state, reward, terminated, truncated
 
-    def _preprocess_state(self, state):
+    def _preprocess_state(self, state: npt.ArrayLike):
         normalised_state = state / self.state_space_normalization
-        return normalised_state[2:] # only keep orientation & angular velocity of pole
-
-    def _get_sample_weight(self, action, next_state, reward, finished):
-        # This makes sure the bad moves are weighted stronger. Empirically it doesn't work.
-        #return 1.0 if finished else 1.0 / self.previous_benchmark
-        return 1.0
+        orientation_and_angular_velocity_only = normalised_state[2:]
+        return orientation_and_angular_velocity_only
