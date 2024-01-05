@@ -31,7 +31,7 @@ class BaseAgent(ABC):
     name = "base"
     generator_type = None
 
-    def __init__(self, action_space, state_space, hyper_params: ModelHyperParams = None):
+    def __init__(self, action_space, state_space, hyper_params: ModelHyperParams = None, verbose=1):
         self.action_space = action_space
         self.state_space = state_space
         self.hyper_params = hyper_params
@@ -43,6 +43,7 @@ class BaseAgent(ABC):
         self.all_actions = np.array([0, 1])
         self.epsilon = hyper_params.initial_epsilon
         self.model = self._get_model(hyper_params)
+        self.verbose=verbose
 
     def build_targets(self, actions, rewards, states, next_states):
         pass
@@ -50,7 +51,8 @@ class BaseAgent(ABC):
     def decay_epsilon(self):
         new_epsilon = np.round(self.hyper_params.epsilon_decay_constant*self.epsilon, 5)
         self.epsilon = 0.0 if self.epsilon == new_epsilon else new_epsilon
-        print("eps: ", self.epsilon)
+        if self.verbose == 1:
+            print("eps: ", self.epsilon)
 
     def get_action(self, state, is_training=False):
         raise NotImplementedError
@@ -65,7 +67,7 @@ class BaseAgent(ABC):
         self.model.save_weights(os.path.join(self.weights_save_path, self.name))
 
     def train(self, batch_generator):
-        self.model.fit(batch_generator)
+        self.model.fit(batch_generator, verbose=self.verbose)
 
     def _get_model(self, hyper_params: ModelHyperParams):
         raise NotImplementedError

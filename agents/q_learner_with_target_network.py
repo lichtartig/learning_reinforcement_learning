@@ -6,7 +6,7 @@ class QLearnerWithTargetNetwork(QLearner):
     name = "q_learner_with_target_network"
     generator_type = BatchGeneratorType.STATE_AND_ACTION_AS_INPUTS
     
-    def __init__(self, action_space, state_space, hyper_params: ModelHyperParams):
+    def __init__(self, action_space, state_space, hyper_params: ModelHyperParams, verbose=1):
         super().__init__(action_space, state_space, hyper_params)
         self.target_model = self._get_model(hyper_params)
         self.target_model.set_weights(self.model.get_weights())

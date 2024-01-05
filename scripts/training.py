@@ -14,7 +14,7 @@ class TrainingHyperParams():
     only_on_policy: bool=True
 
 
-def train(env_handler, agent, training_params: TrainingHyperParams):
+def train(env_handler, agent, training_params: TrainingHyperParams, verbose=1):
     buffer = ExperienceBuffer(max_buffer_size=training_params.max_buffer_size)
     prev_benchmark = None
     agent.save_weights()
@@ -35,17 +35,21 @@ def train(env_handler, agent, training_params: TrainingHyperParams):
         evaluation = env_handler.evaluate_benchmark(prev_benchmark, benchmark)
         
         if evaluation == Evaluation.RESET_MODEL:
-            print("Current Benchmark Result: ", benchmark, "Previously: ", prev_benchmark, ". Reinitializing...")
+            if verbose == 1:
+                print("Current Benchmark Result: ", benchmark, "Previously: ", prev_benchmark, ". Reinitializing...")
             agent.reset_model()
         elif evaluation == Evaluation.AGENT_TRAINED:
-            print("Agent trained. Yay!")
+            if verbose == 1:
+                print("Agent trained. Yay!")
             env_handler.close_env()
-            return True 
+            return e+1
         elif evaluation == Evaluation.NEEDS_MORE_DATA:
-            print("Current Benchmark Result: ", benchmark, "Previously: ", prev_benchmark, ". Collecting more data...")
+            if verbose == 1:
+                print("Current Benchmark Result: ", benchmark, "Previously: ", prev_benchmark, ". Collecting more data...")
             agent.load_weights()
         elif evaluation == Evaluation.UPDATE_WEIGHTS:
-            print("Current Benchmark Result: ", benchmark, "Previously: ", prev_benchmark, ". Saving weights...")
+            if verbose == 1:
+                print("Current Benchmark Result: ", benchmark, "Previously: ", prev_benchmark, ". Saving weights...")
             agent.save_weights()
             agent.decay_epsilon()
             prev_benchmark = benchmark
@@ -54,4 +58,4 @@ def train(env_handler, agent, training_params: TrainingHyperParams):
             buffer.flush()
     
     env_handler.close_env()
-    return False
+    return -1
