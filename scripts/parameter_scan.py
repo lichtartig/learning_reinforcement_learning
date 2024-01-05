@@ -1,4 +1,5 @@
 import numpy as np
+import pickle
 from .training import train
 from itertools import permutations
 
@@ -32,7 +33,7 @@ def _needs_more_data(param_name, results_dict):
     proportion_trained = {name: _get_proportion_trained(results) for name, results in results_dict.items()}
     mean_episodes_needed = {name: _get_mean_episodes_needed(results) for name, results in results_dict.items()}    
 
-    with open('best_batch_size_log', 'a') as file:
+    with open('best_batch_size.log', 'a') as file:
         file.write(GENERIC_LOG_STRING.format(training_runs, proportion_trained, mean_episodes_needed))
 
     if len(results_dict.get(param_name, [])) < MINIMUM_NUMBER_TRAINING_RUNS:
@@ -42,10 +43,15 @@ def _needs_more_data(param_name, results_dict):
     comparison_param_name = best_params[-1] if best_params[-1] != param_name else best_params[-2]
     p_value = _get_p_value(results_dict[param_name], results_dict[comparison_param_name])
     
-    with open('best_batch_size_log', 'a') as file:
+    with open('best_batch_size.log', 'a') as file:
         file.write(P_VALUE_LOG_STRING.format(param_name, comparison_param_name, p_value))
         
     return False if 0.95 <= p_value or p_value <= 0.05 else True
+
+
+def _pickle_intermediate_results(results_dict):
+    with open('batch_size_results_dict.pkl', 'wb') as file:
+        pickle.dump(results_dict, file)
 
 
 def parameter_scan(hyper_param_dict, make_agent_fct, make_env_handler_fct, verbose=0):
@@ -62,4 +68,6 @@ def parameter_scan(hyper_param_dict, make_agent_fct, make_env_handler_fct, verbo
             agent = make_agent_fct(env_handler.get_action_space(), env_handler.get_state_space(), model_params)
             episodes_needed = train(env_handler, agent, training_params, verbose=verbose)
             
-            results_dict[param_name] = results_dict.get(param_name, []) + [episodes_needed]   
+            results_dict[param_name] = results_dict.get(param_name, []) + [episodes_needed]
+            _pickle_intermediate_results(results_dict)
+            

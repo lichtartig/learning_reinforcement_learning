@@ -1,6 +1,10 @@
 .idea/
 .ipynb_checkpoints/
 checkpoint
-*.index
-*.data-00000-of-00001
 *__pycache__*
+*.pkl
+*.log
+# The following makes sure that by default weight-files are ignored, but we can make exceptions to include in the repo
+!weights
+weights/*
+#!weights/some_example_file

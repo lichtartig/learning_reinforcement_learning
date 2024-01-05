@@ -30,7 +30,7 @@ model_params = ModelHyperParams(
     kernel_initializer="he_uniform"
 )
 
-batch_sizes = [32, 64, 128, 256, 512, 1024, 2048]
+batch_sizes = [128, 256, 512, 1024, 2048]
 hyper_param_dict = {b: (get_training_params(b), model_params) for b in batch_sizes}
 
 parameter_scan(hyper_param_dict, make_agent_fct, make_env_handler_fct, verbose=1)
