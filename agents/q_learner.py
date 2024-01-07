@@ -15,7 +15,7 @@ class QLearner(BaseAgent):
 
         actions = self.env_handler.get_all_actions()
         action_dim = self.env_handler.get_action_dim()
-        qs = [self.model.predict([state[None,:], a.reshape(-1, action_dim)], verbose=0) for a in actions]
+        qs = self.model.predict([np.tile(state[None,:], (len(actions), 1)), actions[:,None]], verbose=0)[:,0]
         return  actions[np.argmax(qs)]
 
     def build_targets(
