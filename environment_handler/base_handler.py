@@ -15,13 +15,18 @@ class EnvironmentHandler(ABC):
     def __init__(self, no_of_benchmark_episodes: int = 5, show_graphics: bool = False):
         self.env = gym.make(self.env_name, render_mode="human") if show_graphics else gym.make(self.env_name)
         self.no_of_benchmark_episodes = no_of_benchmark_episodes
-        self.environment_seed = 42 # TODO This should be fixed.
+        self.environment_seed = 42 # TODO This should be fixed at some point.
+        self.is_model_comparison = False
+        self.benchmark_results = []
 
     def benchmark_agent(self, agent) -> float:
         raise NotImplementedError
 
     def close_env(self):
         self.env.close()
+
+    def enable_model_comparison_mode(self):
+        self.is_model_comparison = True
 
     def evaluate_benchmark(self, prev_benchmark: float, benchmark_result: float) -> Evaluation:
         raise NotImplementedError
@@ -36,6 +41,9 @@ class EnvironmentHandler(ABC):
     def get_all_actions(self):
         # TODO write generic code to derive this from action space rather than doing this in Implementation, once needed
         raise NotImplementedError
+
+    def get_benchmark_results(self):
+        return self.benchmark_results
 
     def get_categorical_action_encoding(self, actions: npt.ArrayLike) -> npt.ArrayLike:
         raise

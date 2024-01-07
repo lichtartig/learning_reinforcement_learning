@@ -21,8 +21,8 @@ def get_model_params(gamma):
     )
 
 
-make_agent_fct=lambda e, p: QLearner(e, p, verbose=1)
-make_env_handler_fct=lambda: CartPoleHandler()
+make_agent_fct = lambda e, p: QLearner(e, p, verbose=1)
+make_env_handler_fct = lambda: CartPoleHandler()
 
 training_params = TrainingHyperParams(
     batch_size=256,
@@ -31,7 +31,7 @@ training_params = TrainingHyperParams(
     max_buffer_size=10*400*256
 )
 
-gamma_values = [0.0, 0.1, 0.2, 0.3, 0.5, 0.7, 0.9]
+gamma_values = [0.0, 0.1, 0.2, 0.3, 0.5, 0.7]
 hyper_param_dict = {g: (training_params, get_model_params(g)) for g in gamma_values}
 
 parameter_scan(hyper_param_dict, make_agent_fct, make_env_handler_fct, file_name="best_gamma", verbose=1)

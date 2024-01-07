@@ -21,8 +21,8 @@ def get_model_params(no_layers, no_units):
     )
 
 
-make_agent_fct=lambda e, p: QLearner(e, p, verbose=1)
-make_env_handler_fct=lambda: CartPoleHandler()
+make_agent_fct = lambda e, p: QLearner(e, p, verbose=1)
+make_env_handler_fct = lambda: CartPoleHandler()
 
 training_params = TrainingHyperParams(
     batch_size=256,

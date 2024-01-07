@@ -7,6 +7,8 @@ class CartPoleHandler(EnvironmentHandler):
     env_name = "CartPole-v1"
     state_space_normalization = np.array([4.8, 1.0, 0.418, 1.0])
     previous_benchmark = 20
+    steps_needed_for_success = 200
+    
 
     def benchmark_agent(self, agent) -> float:
         lengths = []
@@ -16,13 +18,16 @@ class CartPoleHandler(EnvironmentHandler):
             finished = False
             counter = 0
     
-            while not finished and counter <= 200:
+            while not finished and counter <= self.steps_needed_for_success:
                 action = agent.get_action(state)
                 state, reward, finished, _ = self.perform_action(action)
                 counter += 1
     
             lengths.append(counter)
             
+        if self.is_model_comparison:
+            self.benchmark_results.append(lengths)
+        
         median_episode_length = np.median(lengths)
         return median_episode_length
         
@@ -32,7 +37,7 @@ class CartPoleHandler(EnvironmentHandler):
 
         if self.previous_benchmark <= 20.0 and benchmark_result <= 20.0:
             return Evaluation.RESET_MODEL
-        elif 200 < benchmark_result:
+        elif self.steps_needed_for_success < benchmark_result and not self.is_model_comparison:
             return Evaluation.AGENT_TRAINED
         elif benchmark_result <= self.previous_benchmark:
             return Evaluation.NEEDS_MORE_DATA

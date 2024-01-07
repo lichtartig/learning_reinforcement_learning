@@ -18,8 +18,8 @@ def get_training_params(batch_size):
     )
 
 
-make_agent_fct=lambda e, p: PolicyGradient(e, p, verbose=1)
-make_env_handler_fct=lambda: CartPoleHandler()
+make_agent_fct = lambda e, p: PolicyGradient(e, p, verbose=1)
+make_env_handler_fct = lambda: CartPoleHandler()
 
 model_params = ModelHyperParams(
     initial_epsilon=0.5,
