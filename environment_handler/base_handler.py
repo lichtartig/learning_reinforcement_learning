@@ -1,7 +1,10 @@
 import gymnasium as gym
+import matplotlib.pyplot as plt
 import numpy.typing as npt
+import os
 from abc import ABC
 from enum import Enum
+from matplotlib import animation
 
 
 class Evaluation(Enum):
@@ -19,7 +22,7 @@ class EnvironmentHandler(ABC):
         self.is_model_comparison = False
         self.benchmark_results = []
 
-    def benchmark_agent(self, agent) -> float:
+    def benchmark_agent(self, agent, replace_last_entry: bool = False) -> float:
         raise NotImplementedError
 
     def close_env(self):
@@ -59,6 +62,26 @@ class EnvironmentHandler(ABC):
     def get_state_dim(self):
         # TODO write generic code to derive this from action space rather than doing this in Implementation, once needed
         raise NotImplementedError
+
+    def render_animation(self, agent):
+        plt.rcParams["animation.html"] = "jshtml"
+        env = gym.make(self.env_name, render_mode="rgb_array")
+        observation = env.reset()
+        frames = []
+        for t in range(1000):
+            frames.append(env.render())
+            action = env.action_space.sample()
+            _, _, terminated, truncated, _ = env.step(action)
+            if terminated or truncated:
+                break
+        env.close()
+
+        plt.figure(figsize=(frames[0].shape[1] / 200.0, frames[0].shape[0] / 200.0), dpi=100)
+        patch = plt.imshow(frames[0])
+        plt.axis('off')
+    
+        anim =  animation.FuncAnimation(plt.gcf(), lambda i: patch.set_data(frames[i]), frames = len(frames), interval=50)
+        return anim
 
     def perform_action(self, action: npt.ArrayLike) -> tuple[npt.ArrayLike, float, bool, float]:
         next_state, reward, terminated, truncated = self._preprocess_action_outcome(*self.env.step(action))

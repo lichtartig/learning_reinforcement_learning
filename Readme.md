@@ -13,11 +13,13 @@ Crucially, all of these components have been implemented in a completely generic
 2. Learn lessons for hyperparameter tuning in an easier setting, before passing to environments requiring longer training times and more computational resources.
 
 ## File Organisation: Where to find what?
-* `Results.ipynb`: This file presents the findings of this project and explanations of the details. It should serves as a starting point and we refer to the remaining code only for implementation details.
+* `Summary.ipynb`: This file presents the findings of this project and explanations of the details. It should serves as a starting point and we refer to the remaining code only for implementation details.
 * `agents/`: This module contains the implementations of all algorithms mentioned above. The class `BaseAgent` serves as an abstract base class for all algorithms, containing common logic - e.g. to save weights - while the `RandomAgent` can be used as a base line against "real" models. Since some models share a lot of code (e.g. the `QLearner` and the `QLearnerWithTargetNetwork`), they inherit from each other.
 * `scripts/`: Logic containing the training-loop or concerning parameter search is contained in this module.
 * `environment_handler/`: Contains an interface to encapsulate any logic that is specific to an environment. We can then concentrate an environment into a single implementation -- e.g. `CartPole` -- and decouple the remaining code base from it.
 * `experience_buffer/`: A module for a completely generic Experience Buffer.
+* `find_best_batch_size.py`: An example file on how to run a systematic hyper parameter search.
+* `compare_models.py`: Generates and pickles comparison data on different models.
 
 ## Next steps
 * Move to more complex environments, particularly ones where the *credit assignment problem* becomes more pressing.

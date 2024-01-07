@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pickle
 from .training import train, TrainingHyperParams
@@ -8,8 +9,8 @@ from scipy.stats import permutation_test
 from typing import Callable
 
 
-TRAINING_RUNS_PER_SIGNIFICANCE_TEST = 5
-MINIMUM_NUMBER_TRAINING_RUNS = 10
+MINIMUM_RUNS_FOR_P_TEST = 10
+FILE_PATH = "pkls_and_logs"
 GENERIC_LOG_STRING = "------------------------------------------------------------------------------------------------------\ntraining_runs: {}\nproportion_trained: {}\nmean_episodes_needed: {}\n"
 P_VALUE_LOG_STRING = "p-value of {} and {}: {}\n"
 
@@ -31,15 +32,18 @@ def _get_proportion_trained(results: list[int]) -> float:
     return np.round((np.array(a) != -1).sum() / a.size, 2)
 
 
-def _needs_more_data(param_name: object, results_dict: dict[object, list[int]], file_name: str) -> bool:
+def _needs_more_data(param_name: object, results_dict: dict[object, list[int]], file_name: str, max_runs: int) -> bool:
     training_runs = {name: len(results) for name, results in results_dict.items()}
+    if max_runs <= training_runs.get(param_name, 0):
+        return False
+    
     proportion_trained = {name:  _get_proportion_trained(results) for name, results in results_dict.items()}
     mean_episodes_needed = {name: _get_mean_episodes_needed(results) for name, results in results_dict.items()}    
 
     output = GENERIC_LOG_STRING.format(training_runs, proportion_trained, mean_episodes_needed)
     _user_output(output, file_name)
 
-    lacks_samples_for_p_test = len(results_dict.get(param_name, [])) < MINIMUM_NUMBER_TRAINING_RUNS
+    lacks_samples_for_p_test = len(results_dict.get(param_name, [])) < MINIMUM_RUNS_FOR_P_TEST
     if lacks_samples_for_p_test:
         return True
     
@@ -57,8 +61,9 @@ def _needs_more_data(param_name: object, results_dict: dict[object, list[int]], 
 def _pickle_intermediate_results(results_dict: dict[object, list[int]], file_name: str):
     if file_name is None:
         return
-    
-    with open(file_name + '.pkl', 'wb') as file:
+
+    full_path = os.path.join(FILE_PATH, file_name) + '.pkl'
+    with open(full_path, 'wb') as file:
         pickle.dump(results_dict, file)
 
 
@@ -66,27 +71,29 @@ def _user_output(text: str, file_name: str):
     if file_name is None:
         print(text)
     else:
-        with open(file_name + '.log', 'a') as file:
+        full_path = os.path.join(FILE_PATH, file_name) + '.log'
+        with open(full_path, 'a') as file:
             file.write(text)
 
 
 def parameter_scan(hyper_param_dict: dict[object, tuple[TrainingHyperParams, ModelHyperParams]],
                    make_agent_fct: Callable[[EnvironmentHandler, ModelHyperParams], BaseAgent],
                    make_env_handler_fct: Callable[[], EnvironmentHandler],
-                   file_name: str = None, verbose: int = 0):
+                   file_name: str = None, verbose: int = 0, max_runs: int = 9999, runs_per_sign_test: int = 5):
     try:
-        results_dict = pickle.load(open(file_name + '.pkl', 'rb'))
+        full_path = os.path.join(FILE_PATH, file_name) + '.pkl'
+        results_dict = pickle.load(open(full_path, 'rb'))
     except:
         results_dict = {}
     param_config_needs_more_data = {param_name: True for param_name in hyper_param_dict}
     
     while any(param_config_needs_more_data.values()):
         for param_name, (training_params, model_params) in hyper_param_dict.items():
-            param_config_needs_more_data[param_name] = _needs_more_data(param_name, results_dict, file_name)
+            param_config_needs_more_data[param_name] = _needs_more_data(param_name, results_dict, file_name, max_runs)
             if not param_config_needs_more_data[param_name]:
                 continue
             
-            for _ in range(TRAINING_RUNS_PER_SIGNIFICANCE_TEST):
+            for _ in range(runs_per_sign_test):
                 env_handler = make_env_handler_fct()
                 agent = make_agent_fct(env_handler, model_params)
                 episodes_needed = train(env_handler, agent, training_params, verbose=verbose)

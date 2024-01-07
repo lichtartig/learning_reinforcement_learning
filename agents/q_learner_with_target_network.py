@@ -27,8 +27,8 @@ class QLearnerWithTargetNetwork(QLearner):
         super().reset_model()
         self.target_model.set_weights(self.model.get_weights())
 
-    def save_weights(self):
-        super().save_weights()
+    def save_weights(self, weights_file_name: str = None):
+        super().save_weights(weights_file_name)
         self.training_cycles += 1
         if self.training_cycles % self.hyper_params.cycles_per_target_update == 0:
             print("Updating target weights...")

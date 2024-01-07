@@ -2,9 +2,10 @@
 .ipynb_checkpoints/
 checkpoint
 *__pycache__*
-*.pkl
-*.log
 # The following makes sure that by default weight-files are ignored, but we can make exceptions to include in the repo
 !weights
 weights/*
 #!weights/some_example_file
+!pkls_and_logs
+pkls_and_logs/*
+#!pkls_and_logs/some_example_file

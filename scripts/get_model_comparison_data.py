@@ -1,3 +1,4 @@
+import numpy as np
 import os
 import pickle
 from .training import train, TrainingHyperParams
@@ -46,8 +47,10 @@ def get_model_comparison_data(
             env_handler = make_env_handler_fct()
             env_handler.enable_model_comparison_mode()
             agent = make_agent_fct(env_handler)
-            _ = train(env_handler, agent, training_params)
+            _ = train(env_handler, agent, training_params, needs_data_for_model_comparison=True)
             results_per_epoch = env_handler.get_benchmark_results()
             results_dict = _get_updated_results_dict(results_dict, agent_name, run_id, results_per_epoch)
             _safe_results(results_dict, file_name)
+            weights_file_name = agent.name + "_" + str(np.mean(results_per_epoch[-1]))
+            agent.save_weights(weights_file_name=weights_file_name)
             

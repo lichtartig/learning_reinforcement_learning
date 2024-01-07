@@ -10,7 +10,7 @@ class CartPoleHandler(EnvironmentHandler):
     steps_needed_for_success = 200
     
 
-    def benchmark_agent(self, agent) -> float:
+    def benchmark_agent(self, agent, replace_last_entry: bool = False) -> float:
         lengths = []
         
         for e in range(self.no_of_benchmark_episodes):
@@ -24,7 +24,9 @@ class CartPoleHandler(EnvironmentHandler):
                 counter += 1
     
             lengths.append(counter)
-            
+
+        if replace_last_entry:
+            _ = self.benchmark_results.pop()
         if self.is_model_comparison:
             self.benchmark_results.append(lengths)
         

@@ -15,7 +15,8 @@ class TrainingHyperParams():
     only_on_policy: bool=True
 
 
-def train(env_handler: EnvironmentHandler, agent: BaseAgent, train_params: TrainingHyperParams, verbose: int = 1) -> int:
+def train(env_handler: EnvironmentHandler, agent: BaseAgent, train_params: TrainingHyperParams,
+          verbose: int = 1, needs_data_for_model_comparison: bool = False) -> int:
     buffer = ExperienceBuffer(max_buffer_size=train_params.max_buffer_size)
     prev_benchmark = None
     agent.save_weights()
@@ -48,6 +49,9 @@ def train(env_handler: EnvironmentHandler, agent: BaseAgent, train_params: Train
             if verbose == 1:
                 print("Current Benchmark Result: ", benchmark, "Previously: ", prev_benchmark, ". Collecting more data...")
             agent.load_weights()
+            if needs_data_for_model_comparison:
+                benchmark = env_handler.benchmark_agent(agent, replace_last_entry=True)
+                
         elif evaluation == Evaluation.UPDATE_WEIGHTS:
             if verbose == 1:
                 print("Current Benchmark Result: ", benchmark, "Previously: ", prev_benchmark, ". Saving weights...")
@@ -55,8 +59,10 @@ def train(env_handler: EnvironmentHandler, agent: BaseAgent, train_params: Train
             agent.decay_epsilon()
             prev_benchmark = benchmark
         
-        if train_params.only_on_policy and evaluation in [Evaluation.UPDATE_WEIGHTS, Evaluation.NEEDS_MORE_DATA]:
-            buffer.flush()
+            if train_params.only_on_policy:
+                buffer.flush()
     
     env_handler.close_env()
+    if verbose == 1:
+        print("Finished training loop. Agent did not converge.")
     return -1

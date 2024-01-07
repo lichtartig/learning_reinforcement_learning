@@ -37,10 +37,11 @@ class BaseAgent(ABC):
 
     def __init__(self, env_handler: EnvironmentHandler, hyper_params: ModelHyperParams = None, verbose: int = 1):
         self.env_handler = env_handler
-        self.hyper_params = hyper_params
-        self.epsilon = hyper_params.initial_epsilon
-        self.model = self._get_model(hyper_params)
         self.verbose=verbose
+        if hyper_params is not None:
+            self.hyper_params = hyper_params
+            self.epsilon = hyper_params.initial_epsilon
+            self.model = self._get_model(hyper_params)
 
     def build_targets(
         self,
@@ -63,8 +64,10 @@ class BaseAgent(ABC):
     def reset_model(self):
         self.model = self._get_model(self.hyper_params)
     
-    def save_weights(self):
-        self.model.save_weights(os.path.join(self.weights_save_path, self.name))
+    def save_weights(self, weights_file_name: str = None):
+        if weights_file_name is None:
+            weights_file_name = self.name
+        self.model.save_weights(os.path.join(self.weights_save_path, weights_file_name))
 
     def train(self, batch_generator: Callable[[int, BatchGeneratorType], npt.ArrayLike]):
         self.model.fit(batch_generator, verbose=self.verbose)
