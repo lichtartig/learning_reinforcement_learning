@@ -6,6 +6,11 @@ from typing import Callable
 
 
 class ExperienceBuffer():
+    """ A completely generic experience buffer: New data is appended to a queue. Before training the
+    'prepare_experience_for_training' should be called. This will build a random permutation and build the numpy arrays
+    containing the data for training using a custom 'target_builder_fct' which is passed as an argument. Finally the
+    'batch_generator' function can be directly passed to model.fit() as a generator. """
+    
     def __init__(self, max_buffer_size: int):
         self.max_buffer_size = max_buffer_size
         

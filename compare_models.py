@@ -8,7 +8,7 @@ from scripts import get_model_comparison_data, TrainingHyperParams
 
 training_params = TrainingHyperParams(
     batch_size=256,
-    epochs=30,
+    epochs=40,
     steps_per_epoch=400*256,
     max_buffer_size=10*400*256
 )
@@ -62,4 +62,4 @@ make_agent_fct_dict = {
 
 
 get_model_comparison_data(make_env_handler_fct, make_agent_fct_dict, training_params,
-                          runs_per_agent=5, file_name="model_comparison")
+                          runs_per_agent=10, file_name="model_comparison")

@@ -80,6 +80,12 @@ def parameter_scan(hyper_param_dict: dict[object, tuple[TrainingHyperParams, Mod
                    make_agent_fct: Callable[[EnvironmentHandler, ModelHyperParams], BaseAgent],
                    make_env_handler_fct: Callable[[], EnvironmentHandler],
                    file_name: str = None, verbose: int = 0, max_runs: int = 9999, runs_per_sign_test: int = 5):
+    """ This performs a parameter search and computes p-values through a permutation test to make sure differences in
+    performance are significant. The different configurations to test are passed through the 'hyper_param_dict', while the
+    'make_agent_fct' serves as a factory method to generate the corresponding agents. The 'make_env_handler_fct' serves as a
+    factory method to re-instantiate the environment-handler. Finally, you can specify via the 'file_name' where results are
+    logged and pickled to."""
+    
     try:
         full_path = os.path.join(FILE_PATH, file_name) + '.pkl'
         results_dict = pickle.load(open(full_path, 'rb'))

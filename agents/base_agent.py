@@ -10,12 +10,18 @@ from typing import Callable
 
 
 class BatchGeneratorType(Enum):
+    """ This enum is passed to the 'batch_generator' in the 'ExperienceBuffer' to specify the form of the model inputs. """
+    
     STATE_AND_ACTION_AS_INPUTS = 1
     ONLY_STATE_AS_INPUT = 2
 
 
 @dataclass
 class ModelHyperParams():
+    """ This encapsulates all model parameters. For simplicity, currently this is the same for all models, such that not all
+    parameters are applicable and might not be used. If this seems better in the future, it might instead serve as an abstract
+    base class. """
+    
     no_hidden_layers: int
     units_per_hidden_layer: int
     initial_epsilon: float
@@ -29,6 +35,9 @@ class ModelHyperParams():
     
 
 class BaseAgent(ABC):
+    """ This is an abstract base class for all models. It encapsulates some common logic (e.g. to save weights to file), but
+    also defines the interface that is used for example in the training loop. """
+    
     epsilon = 0.0
     epsilon_decay_constant = 0.9
     weights_save_path = "weights"
@@ -58,8 +67,10 @@ class BaseAgent(ABC):
     def get_action(self, state: npt.ArrayLike, is_training: bool = False) -> npt.ArrayLike:
         raise NotImplementedError
 
-    def load_weights(self):
-        self.model.load_weights(os.path.join(self.weights_save_path, self.name))
+    def load_weights(self, file_name: str = None):
+        if file_name is None:
+            file_name = self.name
+        self.model.load_weights(os.path.join(self.weights_save_path, file_name))
 
     def reset_model(self):
         self.model = self._get_model(self.hyper_params)

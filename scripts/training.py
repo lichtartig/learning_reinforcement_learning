@@ -8,6 +8,8 @@ from experience_buffer import ExperienceBuffer, BatchGeneratorType
 
 @dataclass
 class TrainingHyperParams():
+    """ This contains all parameters related to the training loop. Parameters referring to the model architecture are not part
+    of this. """
     batch_size: int
     epochs: int
     steps_per_epoch: int
@@ -17,6 +19,8 @@ class TrainingHyperParams():
 
 def train(env_handler: EnvironmentHandler, agent: BaseAgent, train_params: TrainingHyperParams,
           verbose: int = 1, needs_data_for_model_comparison: bool = False) -> int:
+    """ This is the main training loop for a given environment and agent. It is configurable through the 'train_params'. """
+    
     buffer = ExperienceBuffer(max_buffer_size=train_params.max_buffer_size)
     prev_benchmark = None
     agent.save_weights()
@@ -42,7 +46,7 @@ def train(env_handler: EnvironmentHandler, agent: BaseAgent, train_params: Train
             agent.reset_model()
         elif evaluation == Evaluation.AGENT_TRAINED:
             if verbose == 1:
-                print("Agent trained. Yay!")
+                print("Current Benchmark Result: ", benchmark, "Previously: ", prev_benchmark, ". Agent trained. Yay!")
             env_handler.close_env()
             return e+1
         elif evaluation == Evaluation.NEEDS_MORE_DATA:

@@ -4,6 +4,9 @@ from . import BatchGeneratorType, ModelHyperParams, QLearnerWithTargetNetwork
 
 
 class DoubleQLearner(QLearnerWithTargetNetwork):
+    """ This inherits in the following chain DoubleQLearner <- QLearnerWithTargetNetwork <- QLearner <- BaseAgent. It modifies
+    the Bellman equation by using both train- and target-network, as described in the original reference. """
+    
     name = "double_q_learner"
     generator_type = BatchGeneratorType.STATE_AND_ACTION_AS_INPUTS
 

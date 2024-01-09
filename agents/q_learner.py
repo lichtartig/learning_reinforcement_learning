@@ -6,6 +6,10 @@ from tensorflow.keras.models import Model
 
 
 class QLearner(BaseAgent):
+    """ This inherits from the BaseAgent class and implements the very simple Q-Learner algorithm without a target network.
+    Note, that this class in turn serves as a base class for further variants of the Q-Learner, such as one with a target
+    network and also the Double-Q-Learner addressing the overestimation problem."""
+    
     name = "q_learner"
     generator_type = BatchGeneratorType.STATE_AND_ACTION_AS_INPUTS
     

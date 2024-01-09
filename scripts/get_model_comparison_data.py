@@ -32,6 +32,9 @@ def get_model_comparison_data(
     runs_per_agent: int,
     file_name: str
 ):
+    """ This function trains all models in 'make_agent_fct_dict' multiple times to compare how fast and consistently they
+    converge. These results are then pickled to the 'file_name' specified. """
+    
     try:
         full_path = os.path.join(FILE_PATH, file_name) + '.pkl'
         results_dict = pickle.load(open(full_path, 'rb'))

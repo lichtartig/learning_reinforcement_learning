@@ -4,6 +4,8 @@ from . import EnvironmentHandler, Evaluation
 
 
 class CartPoleHandler(EnvironmentHandler):
+    """ This inherits from the EnvironmentHandler base class and specificies anything specific to the 'CartPole-v1' env. """
+    
     env_name = "CartPole-v1"
     state_space_normalization = np.array([4.8, 1.0, 0.418, 1.0])
     previous_benchmark = 20

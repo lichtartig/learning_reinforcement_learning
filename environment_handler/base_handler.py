@@ -15,6 +15,9 @@ class Evaluation(Enum):
 
 
 class EnvironmentHandler(ABC):
+    """ This class is an abstract base class that serves to encapsulate any logic and configuration that is specific to an
+    environment/problem, such as preprocessing of the state or action variables. """
+    
     def __init__(self, no_of_benchmark_episodes: int = 5, show_graphics: bool = False):
         self.env = gym.make(self.env_name, render_mode="human") if show_graphics else gym.make(self.env_name)
         self.no_of_benchmark_episodes = no_of_benchmark_episodes

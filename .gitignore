@@ -5,7 +5,17 @@ checkpoint
 # The following makes sure that by default weight-files are ignored, but we can make exceptions to include in the repo
 !weights
 weights/*
-#!weights/some_example_file
+!weights/double_q_learner_demo.data-00000-of-00001
+!weights/double_q_learner_demo_target.data-00000-of-00001
+!weights/double_q_learner_demo.index
+!weights/double_q_learner_demo_target.index
+!weights/policy_gradient_demo.data-00000-of-00001
+!weights/policy_gradient_demo.index
+!weights/q_learner_demo.data-00000-of-00001
+!weights/q_learner_demo.index
+!weights/q_learner_with_target_network_demo.data-00000-of-00001
+!weights/q_learner_with_target_network_demo.index
+
 !pkls_and_logs
 pkls_and_logs/*
-#!pkls_and_logs/some_example_file
+!pkls_and_logs/model_comparison.pkl

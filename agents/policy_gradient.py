@@ -6,6 +6,8 @@ from tensorflow.keras.models import Model
 
 
 class PolicyGradient(BaseAgent):
+    """ This model inherits from the 'BaseAgent' and implements the so called Policy Gradient algorithm. """
+    
     name = "policy_gradient"
     generator_type = BatchGeneratorType.ONLY_STATE_AS_INPUT
     
